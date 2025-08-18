@@ -6,11 +6,6 @@ import os
 app = Flask(__name__)
 app.config["APPLICATION_ROOT"] = "/proxy/5000"
 
-@app.context_processor
-def inject_script_root():
-    """macht request.script_root in allen Templates verfügbar"""
-    return dict(script_root=request.script_root)
-
 
 def read_json(file_path):
     """generates absolute path for blog_posts.json and returns the data in it"""
@@ -55,6 +50,13 @@ def write_json(file_path, data):
     except Exception as e:
         print(f"Error writing to JSON: {e}")
 
+def fetch_post_by_id(post_id):
+    """Fetches post by its ID"""
+    blog_posts = read_json("blog_entries.json")  
+    if isinstance(blog_posts, list) and 0 <= post_id < len(blog_posts):
+        return blog_posts[post_id]
+    return None
+
 @app.route('/')
 def index():
     """returns the blog entries from json"""
@@ -94,6 +96,28 @@ def delete(post_id):
         blog_posts.pop(post_id)
         write_json("blog_entries.json", blog_posts)
     return redirect(url_for('index'))
+
+
+@app.route('/update/<int:post_id>', methods=['GET', 'POST'])
+def update(post_id):
+    blog_posts = read_json("blog_entries.json")
+    post = fetch_post_by_id(post_id)
+    
+    if post is None:
+        return "Post not found", 404
+
+    if request.method == 'POST':
+        post['author'] = request.form['author']
+        post['title'] = request.form['title']
+        post['content'] = request.form['content']
+
+        blog_posts[post_id] = post
+        write_json("blog_entries.json", blog_posts)
+
+        return redirect(url_for('index'))
+
+    
+    return render_template('update.html', post=post, post_id=post_id)
 
     
 
