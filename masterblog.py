@@ -90,11 +90,11 @@ def add():
 @app.route('/delete/<int:post_id>')
 def delete(post_id):
     blog_posts = read_json("blog_entries.json")
-    if str(post_id) in blog_posts:
-        del blog_posts[str(post_id)]
-    
-    write_json("blog_entries.json", blog_posts)
+    if 0 <= post_id < len(blog_posts):
+        blog_posts.pop(post_id)
+        write_json("blog_entries.json", blog_posts)
     return redirect(url_for('index'))
+
     
 
 if __name__ == '__main__':
