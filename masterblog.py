@@ -4,6 +4,12 @@ import os
 
 
 app = Flask(__name__)
+app.config["APPLICATION_ROOT"] = "/proxy/5000"
+
+@app.context_processor
+def inject_script_root():
+    """macht request.script_root in allen Templates verfügbar"""
+    return dict(script_root=request.script_root)
 
 
 def read_json(file_path):
@@ -16,6 +22,7 @@ def read_json(file_path):
             data = json.load(file)
             print(f"Loaded data successfully from: {file_path}")
             return data
+
     except FileNotFoundError:
         print(f"File not found: {file_path}")
         return []
@@ -24,19 +31,18 @@ def read_json(file_path):
         return []
     
 def add_post_to_json(blog_posts, new_post):
-    """Adds a new post to the blog posts dictionary"""
-    if not blog_posts:
-        new_id = 1
-    else:
-        new_id = max(int(key) for key in blog_posts.keys()) + 1
-    blog_posts[str(new_id)] = new_post
+    """Fügt einen neuen Post in die Liste ein"""
+    blog_posts.append(new_post)
     return blog_posts
     
 def delete_post_from_json(blog_posts, post_id):
-    """Deletes a post from the blog posts dictionary"""
-    if str(post_id) in blog_posts:
-        del blog_posts[str(post_id)]
+    """Löscht einen Post aus der Liste nach Index"""
+    try:
+        del blog_posts[post_id]
+    except IndexError:
+        pass
     return blog_posts
+
 
 def write_json(file_path, data):
     """Writes data to JSON file"""
