@@ -4,7 +4,7 @@ import os
 
 
 app = Flask(__name__)
-app.config["APPLICATION_ROOT"] = "/proxy/5000"
+
 
 
 def read_json(file_path):
